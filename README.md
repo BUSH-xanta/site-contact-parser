@@ -1,117 +1,206 @@
 # Site Contact Parser
 
-Python parser for extracting publicly visible contact data from websites.
+🔎 A Python tool for extracting publicly visible contact information from websites.
 
-The script scans a website and tries to collect:
+This project scans websites and collects contact data that is openly available in HTML pages, such as email addresses, Telegram links or handles, and Russian mobile phone numbers. It is designed as a lightweight utility for public contact discovery, simple OSINT-style collection, and portfolio demonstration.
 
-- email addresses
-- Telegram links and handles
-- Russian mobile phone numbers
+## 📌 Why this project
 
-It checks the main page, common contact-related paths, and a limited number of internal pages that look like contact pages.
+Many websites publish contact information across their homepage, contact pages, about pages, or support sections. Manually collecting this data is slow and repetitive. This tool automates the process by checking a website, exploring common contact-related pages, extracting relevant fields, and saving the results into a structured CSV file.
 
-## Features
+It is useful for:
 
-- URL normalization before processing
-- duplicate domain removal
-- fallback between HTTPS and HTTP
-- extraction of page title as site name
-- parsing of emails, Telegram handles, and phone numbers
-- CSV export
-- tracking of already processed sites
+- collecting publicly visible business contact data
+- automating repetitive website review
+- basic HTML parsing practice
+- lightweight contact enrichment
+- portfolio demonstration of practical Python scripting
 
-## Project Structure
+## ⚙️ Features
 
+- Normalize URLs before processing
+- Remove duplicate domains
+- Fallback between HTTPS and HTTP
+- Extract page title as site name
+- Extract email addresses
+- Extract Telegram links and handles
+- Extract Russian mobile phone numbers
+- Check common contact-related paths
+- Process a limited set of relevant internal pages
+- Export structured results to CSV
+- Track already processed websites
+- Use a simple file-based workflow
+
+## 🗂️ Project structure
+
+```text
 site-contact-parser/
-- site_contact_parser.py
-- requirements.txt
-- .gitignore
-- README.md
-- LICENSE
-- example_sites.txt
+├── .gitignore
+├── LICENSE
+├── README.md
+├── example_sites.txt
+├── requirements.txt
+└── site_contact_parser.py
+```
 
-## Requirements
+## 🧰 Requirements
 
 - Python 3.10+
 - requests
 - beautifulsoup4
 
-## Installation
+## 📦 Installation
 
 Clone the repository:
 
-    git clone https://github.com/BUSH-xanta/site-contact-parser.git
-    cd site-contact-parser
+```bash
+git clone https://github.com/BUSH-xanta/site-contact-parser.git
+cd site-contact-parser
+```
 
 Install dependencies:
 
-    pip install -r requirements.txt
+```bash
+pip install -r requirements.txt
+```
 
 Optional virtual environment on Windows Git Bash:
 
-    python -m venv .venv
-    source .venv/Scripts/activate
-    pip install -r requirements.txt
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+pip install -r requirements.txt
+```
 
-## Usage
+## 🚀 Usage
 
 Prepare a text file with one website per line.
 
-Example sites.txt:
+Example input:
 
-    example.com
-    python.org
-    iana.org
+```text
+example.com
+python.org
+iana.org
+```
 
 Run the parser:
 
-    python site_contact_parser.py
+```bash
+python site_contact_parser.py
+```
 
 By default, the script uses these files:
 
-- sites.txt - input list of raw sites
-- sites_cleaned.txt - normalized and deduplicated sites
-- results.csv - parsed results
-- processed_sites.txt - already processed domains
+- `sites.txt` - input list of raw sites
+- `sites_cleaned.txt` - normalized and deduplicated sites
+- `results.csv` - parsed results
+- `processed_sites.txt` - already processed domains
 
-## Output
+## 📄 Output
 
-The parser writes results to results.csv with the following columns:
+The parser writes results to `results.csv` with the following columns:
 
-- site_name
-- emails
-- telegrams
-- phones
-- url
+```text
+site_name
+emails
+telegrams
+phones
+url
+```
 
 Example row:
 
-    site_name,emails,telegrams,phones,url
-    Example Site,info@example.com,@example,+79991234567,https://example.com
+```text
+Example Site,info@example.com,@example,+79991234567,https://example.com
+```
 
-## How It Works
+## 🧠 How it works
 
-1. Reads websites from sites.txt
-2. Normalizes input URLs
-3. Removes duplicate domains
-4. Opens the main page
-5. Checks common contact pages such as /contacts, /contact, /about, /support
-6. Extracts emails, Telegram handles, and phone numbers
-7. Saves results to CSV
-8. Stores processed domains to avoid duplicate work
+The script follows a simple workflow:
 
-## Notes
+1. Read websites from `sites.txt`
+2. Normalize input URLs
+3. Remove duplicate domains
+4. Open the main page
+5. Check common paths such as `/contacts`, `/contact`, `/about`, and `/support`
+6. Extract email addresses, Telegram handles, and phone numbers
+7. Save results to CSV
+8. Store processed domains to avoid duplicate work later
 
-- The parser only works with publicly accessible HTML content.
-- It does not render JavaScript-heavy pages in a browser.
-- Phone number extraction is tuned for Russian mobile numbers.
-- Extraction quality depends on how the website publishes contact data.
+## 📌 What the parser looks for
 
-## Example Files
+### Email addresses
 
-example_sites.txt contains a small example input list for testing.
+The parser extracts standard email patterns found in visible HTML.
 
-## Responsible Use
+Examples:
+
+```text
+info@example.com
+sales@example.org
+hello@company.ru
+```
+
+### Telegram links and handles
+
+The parser extracts Telegram references such as profile links and usernames.
+
+Examples:
+
+```text
+https://t.me/example
+@example
+```
+
+### Russian mobile phone numbers
+
+The parser attempts to identify Russian mobile phone formats published on websites.
+
+Examples:
+
+```text
++79991234567
+8 (999) 123-45-67
++7 999 123 45 67
+```
+
+## ⚠️ Limitations
+
+This is a lightweight parser, not a full browser automation or crawling framework.
+
+Current limitations:
+
+- works only with publicly accessible HTML
+- does not render JavaScript-heavy pages
+- phone extraction is tuned mainly for Russian mobile numbers
+- extraction quality depends on how the site publishes contact data
+- uses a simple path-checking approach instead of deep crawling
+
+## 🧪 Example file
+
+The repository includes:
+
+```text
+example_sites.txt
+```
+
+This file contains a small example list of websites for testing.
+
+## 💼 Portfolio value
+
+This project demonstrates practical skills in:
+
+- Python scripting
+- HTTP requests and response handling
+- HTML parsing with BeautifulSoup
+- regex-based extraction
+- CSV export
+- input normalization and deduplication
+- simple workflow automation
+- state tracking for repeat runs
+
+## ✅ Responsible use
 
 Use this tool only for lawful and legitimate purposes.
 
@@ -122,6 +211,23 @@ Respect:
 - privacy and local law
 - responsible collection and use of publicly visible data
 
-## License
+This project is intended for working with contact information that websites openly publish. It is not designed for bypassing access controls, scraping private content, or interacting with restricted areas.
+
+## 🔮 Future improvements
+
+Possible next steps:
+
+- add command-line arguments
+- allow custom input and output file paths
+- add support for deeper crawling
+- add better duplicate handling for extracted contacts
+- add retry and timeout tuning
+- add logging and progress output
+- add tests
+- move the project into a `src/` package layout
+- export results to JSON
+- add Docker support
+
+## 📄 License
 
 MIT License
