@@ -26,7 +26,7 @@ def normalize_url(raw_url: str) -> str:
     if not value:
         return ""
 
-    if not value.startswith(("http://", "https://")):
+    if not value.lower().startswith(("http://", "https://")):
         value = f"https://{value}"
 
     parsed = urlparse(value)
