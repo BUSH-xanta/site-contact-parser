@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+
+results.csv
+results.xlsx
+processed_sites.txt
+sites.txt
+sites_cleaned.txt
+
+.DS_Store
+Thumbs.db
