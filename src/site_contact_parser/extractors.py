@@ -23,8 +23,9 @@ TELEGRAM_LINK_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-TELEGRAM_HANDLE_REGEX = re.compile(
-    r"(?<![\w.])@([A-Za-z][A-Za-z0-9_]{2,31})\b"
+TELEGRAM_CONTEXT_HANDLE_REGEX = re.compile(
+    r"(?:telegram|telegram:\s*|telegram\s+channel[:\s]*|telegram\s+group[:\s]*|tg[:\s]+|t\.me/)\s*@?([A-Za-z][A-Za-z0-9_]{2,31})\b",
+    re.IGNORECASE,
 )
 
 RUSSIAN_MOBILE_PHONE_REGEX = re.compile(
@@ -56,7 +57,11 @@ def extract_emails_from_text(text: str) -> list[str]:
 
 def extract_telegrams_from_text(text: str) -> list[str]:
     """
-    Extract Telegram links and @handles from plain text.
+    Extract Telegram references from plain text.
+
+    This function is intentionally conservative to reduce false positives.
+    It prioritizes explicit Telegram links and only accepts @handles in a
+    Telegram-like context.
     """
     found: list[str] = []
 
@@ -65,7 +70,7 @@ def extract_telegrams_from_text(text: str) -> list[str]:
         if telegram:
             found.append(telegram)
 
-    for username in TELEGRAM_HANDLE_REGEX.findall(text):
+    for username in TELEGRAM_CONTEXT_HANDLE_REGEX.findall(text):
         telegram = normalize_telegram(f"@{username}")
         if telegram:
             found.append(telegram)
@@ -115,10 +120,16 @@ def extract_telegrams_from_html(html: str) -> list[str]:
 
     for link in soup.find_all("a", href=True):
         href = link["href"].strip()
+        href_lower = href.lower()
 
         telegram = normalize_telegram(href)
         if telegram:
             found.append(telegram)
+
+        if "t.me/" in href_lower or "telegram.me/" in href_lower:
+            link_text = link.get_text(" ", strip=True)
+            if link_text:
+                found.extend(extract_telegrams_from_text(link_text))
 
     return deduplicate_telegrams(found)
 
