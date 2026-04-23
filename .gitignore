@@ -6,6 +6,9 @@ __pycache__/
 venv/
 .env
 
+temp_*.txt
+temp_*.csv
+
 results.csv
 results.xlsx
 processed_sites.txt
