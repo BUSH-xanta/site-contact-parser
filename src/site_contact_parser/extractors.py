@@ -122,11 +122,17 @@ def extract_telegrams_from_html(html: str) -> list[str]:
         href = link["href"].strip()
         href_lower = href.lower()
 
-        telegram = normalize_telegram(href)
-        if telegram:
-            found.append(telegram)
+        is_telegram_link = (
+            "t.me/" in href_lower
+            or "telegram.me/" in href_lower
+            or href_lower.startswith("@")
+        )
 
-        if "t.me/" in href_lower or "telegram.me/" in href_lower:
+        if is_telegram_link:
+            telegram = normalize_telegram(href)
+            if telegram:
+                found.append(telegram)
+
             link_text = link.get_text(" ", strip=True)
             if link_text:
                 found.extend(extract_telegrams_from_text(link_text))
