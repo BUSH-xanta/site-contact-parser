@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 from pathlib import Path
 from typing import Sequence
 
@@ -16,6 +17,18 @@ from .storage import (
     save_cleaned_sites,
 )
 from .utils import unique_preserve_order
+
+
+LOGGER = logging.getLogger("site_contact_parser")
+
+
+def configure_logging(verbose: bool = False) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+
+    logging.basicConfig(
+        level=level,
+        format="%(levelname)s: %(message)s",
+    )
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -54,6 +67,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         type=float,
         default=10.0,
         help="HTTP timeout in seconds. Default: 10.0",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable more detailed logging output.",
     )
 
     return parser
@@ -104,6 +122,8 @@ def handle_site(
     timeout: float,
     max_pages: int,
 ) -> bool:
+    LOGGER.debug("Starting crawl for site: %s", site)
+
     crawl_result = crawl_site(
         raw_site=site,
         timeout=timeout,
@@ -113,9 +133,16 @@ def handle_site(
     append_processed_domain(processed_path, site)
 
     if not crawl_result["success"]:
+        LOGGER.warning("Failed to fetch site: %s", site)
         return False
 
     pages = crawl_result["pages"]
+    LOGGER.debug(
+        "Fetched %s page(s) for %s",
+        len(pages),
+        site,
+    )
+
     contacts = collect_contacts_from_pages(pages)
 
     row = build_result_row(
@@ -127,6 +154,15 @@ def handle_site(
     )
 
     append_result_row(output_path, row)
+
+    LOGGER.info(
+        "Saved result for %s - emails: %s, telegrams: %s, phones: %s",
+        site,
+        len([item for item in contacts["emails"] if str(item)]),
+        len([item for item in contacts["telegrams"] if str(item)]),
+        len([item for item in contacts["phones"] if str(item)]),
+    )
+
     return True
 
 
@@ -134,32 +170,37 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_arg_parser()
     args = parser.parse_args(argv)
 
+    configure_logging(verbose=args.verbose)
+
     input_path = Path(args.input)
     cleaned_path = Path(args.cleaned)
     output_path = Path(args.output)
     processed_path = Path(args.processed)
 
     if args.max_pages < 1:
-        print("Error: --max-pages must be greater than 0")
+        LOGGER.error("--max-pages must be greater than 0")
         return 1
 
     if args.timeout <= 0:
-        print("Error: --timeout must be greater than 0")
+        LOGGER.error("--timeout must be greater than 0")
         return 1
 
     try:
         sites = load_and_normalize_sites(input_path)
     except FileNotFoundError:
-        print(f"Error: input file does not exist: {input_path}")
+        LOGGER.error("Input file does not exist: %s", input_path)
         return 1
 
     if not sites:
-        print("No valid sites found in input file.")
+        LOGGER.info("No valid sites found in input file.")
         return 0
 
+    LOGGER.info("Loaded %s normalized site(s)", len(sites))
     save_cleaned_sites(cleaned_path, sites)
+    LOGGER.info("Saved cleaned site list to %s", cleaned_path)
 
     processed_domains = load_processed_domains(processed_path)
+    LOGGER.info("Loaded %s processed domain(s)", len(processed_domains))
 
     total_sites = len(sites)
     skipped_sites = 0
@@ -171,10 +212,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if domain in processed_domains:
             skipped_sites += 1
-            print(f"[{index}/{total_sites}] Skipping already processed site: {site}")
+            LOGGER.info("[%s/%s] Skipping already processed site: %s", index, total_sites, site)
             continue
 
-        print(f"[{index}/{total_sites}] Processing: {site}")
+        LOGGER.info("[%s/%s] Processing: %s", index, total_sites, site)
 
         success = handle_site(
             site=site,
@@ -186,19 +227,16 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if success:
             success_sites += 1
-            print(f"  Saved result for: {site}")
         else:
             failed_sites += 1
-            print(f"  Failed to fetch site: {site}")
 
-    print()
-    print("Done.")
-    print(f"Total sites: {total_sites}")
-    print(f"Processed successfully: {success_sites}")
-    print(f"Skipped: {skipped_sites}")
-    print(f"Failed: {failed_sites}")
-    print(f"Cleaned sites file: {cleaned_path}")
-    print(f"CSV output file: {output_path}")
-    print(f"Processed domains file: {processed_path}")
+    LOGGER.info("Done.")
+    LOGGER.info("Total sites: %s", total_sites)
+    LOGGER.info("Processed successfully: %s", success_sites)
+    LOGGER.info("Skipped: %s", skipped_sites)
+    LOGGER.info("Failed: %s", failed_sites)
+    LOGGER.info("Cleaned sites file: %s", cleaned_path)
+    LOGGER.info("CSV output file: %s", output_path)
+    LOGGER.info("Processed domains file: %s", processed_path)
 
     return 0
