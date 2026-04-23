@@ -292,7 +292,6 @@ Possible next steps:
 - export results to JSON
 - add Docker support
 - add tests for CLI behavior
-- move legacy script out of the main branch if no longer needed
 
 ## 📄 License
 
