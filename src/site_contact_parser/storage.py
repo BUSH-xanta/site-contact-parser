@@ -4,7 +4,12 @@ import csv
 from pathlib import Path
 from typing import Iterable
 
-from .normalizers import normalize_domain
+from .normalizers import (
+    deduplicate_emails,
+    deduplicate_phones,
+    deduplicate_telegrams,
+    normalize_domain,
+)
 from .utils import clean_whitespace, join_unique, unique_preserve_order
 
 
@@ -114,11 +119,15 @@ def build_result_row(
     """
     Build one normalized CSV row for extracted contact data.
     """
+    deduplicated_emails = deduplicate_emails(emails)
+    deduplicated_telegrams = deduplicate_telegrams(telegrams)
+    deduplicated_phones = deduplicate_phones(phones)
+
     return {
         "site_name": clean_whitespace(site_name),
-        "emails": join_unique(emails),
-        "telegrams": join_unique(telegrams),
-        "phones": join_unique(phones),
+        "emails": join_unique(deduplicated_emails),
+        "telegrams": join_unique(deduplicated_telegrams),
+        "phones": join_unique(deduplicated_phones),
         "url": clean_whitespace(url),
     }
 
