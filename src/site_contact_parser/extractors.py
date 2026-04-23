@@ -4,12 +4,14 @@ import re
 from bs4 import BeautifulSoup
 
 from .normalizers import (
+    deduplicate_emails,
+    deduplicate_phones,
+    deduplicate_telegrams,
     normalize_email,
     normalize_phone,
     normalize_site_name,
     normalize_telegram,
 )
-from .utils import unique_preserve_order
 
 
 EMAIL_REGEX = re.compile(
@@ -48,14 +50,8 @@ def extract_emails_from_text(text: str) -> list[str]:
     Extract email addresses from plain text.
     """
     matches = EMAIL_REGEX.findall(text)
-
-    normalized = []
-    for match in matches:
-        email = normalize_email(match)
-        if email:
-            normalized.append(email)
-
-    return unique_preserve_order(normalized)
+    normalized = [normalize_email(match) for match in matches]
+    return deduplicate_emails(normalized)
 
 
 def extract_telegrams_from_text(text: str) -> list[str]:
@@ -74,7 +70,7 @@ def extract_telegrams_from_text(text: str) -> list[str]:
         if telegram:
             found.append(telegram)
 
-    return unique_preserve_order(found)
+    return deduplicate_telegrams(found)
 
 
 def extract_phones_from_text(text: str) -> list[str]:
@@ -82,14 +78,8 @@ def extract_phones_from_text(text: str) -> list[str]:
     Extract Russian mobile phone numbers from plain text.
     """
     matches = RUSSIAN_MOBILE_PHONE_REGEX.findall(text)
-
-    normalized = []
-    for match in matches:
-        phone = normalize_phone(match)
-        if phone:
-            normalized.append(phone)
-
-    return unique_preserve_order(normalized)
+    normalized = [normalize_phone(match) for match in matches]
+    return deduplicate_phones(normalized)
 
 
 def extract_emails_from_html(html: str) -> list[str]:
@@ -110,7 +100,7 @@ def extract_emails_from_html(html: str) -> list[str]:
             if email:
                 found.append(email)
 
-    return unique_preserve_order(found)
+    return deduplicate_emails(found)
 
 
 def extract_telegrams_from_html(html: str) -> list[str]:
@@ -130,7 +120,7 @@ def extract_telegrams_from_html(html: str) -> list[str]:
         if telegram:
             found.append(telegram)
 
-    return unique_preserve_order(found)
+    return deduplicate_telegrams(found)
 
 
 def extract_phones_from_html(html: str) -> list[str]:
@@ -151,7 +141,7 @@ def extract_phones_from_html(html: str) -> list[str]:
             if phone:
                 found.append(phone)
 
-    return unique_preserve_order(found)
+    return deduplicate_phones(found)
 
 
 def extract_contacts_from_html(html: str) -> dict[str, list[str] | str]:
