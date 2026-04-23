@@ -30,6 +30,10 @@ def configure_logging(verbose: bool = False) -> None:
         format="%(levelname)s: %(message)s",
     )
 
+    if verbose:
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+        logging.getLogger("requests").setLevel(logging.WARNING)
+
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
