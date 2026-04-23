@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from urllib.parse import urlparse
 
 
@@ -102,7 +103,7 @@ def normalize_telegram(value: str) -> str:
     if not username:
         return ""
 
-    return f"@{username}"
+    return f"@{username.lower()}"
 
 
 def normalize_phone(phone: str) -> str:
@@ -130,3 +131,60 @@ def normalize_site_name(title: str) -> str:
     """
     value = " ".join(title.split()).strip()
     return value
+
+
+def deduplicate_emails(values: Iterable[str]) -> list[str]:
+    """
+    Normalize and deduplicate emails while preserving order.
+    """
+    seen: set[str] = set()
+    result: list[str] = []
+
+    for value in values:
+        normalized = normalize_email(value)
+        if not normalized:
+            continue
+
+        if normalized not in seen:
+            seen.add(normalized)
+            result.append(normalized)
+
+    return result
+
+
+def deduplicate_telegrams(values: Iterable[str]) -> list[str]:
+    """
+    Normalize and deduplicate Telegram handles while preserving order.
+    """
+    seen: set[str] = set()
+    result: list[str] = []
+
+    for value in values:
+        normalized = normalize_telegram(value)
+        if not normalized:
+            continue
+
+        if normalized not in seen:
+            seen.add(normalized)
+            result.append(normalized)
+
+    return result
+
+
+def deduplicate_phones(values: Iterable[str]) -> list[str]:
+    """
+    Normalize and deduplicate phone numbers while preserving order.
+    """
+    seen: set[str] = set()
+    result: list[str] = []
+
+    for value in values:
+        normalized = normalize_phone(value)
+        if not normalized:
+            continue
+
+        if normalized not in seen:
+            seen.add(normalized)
+            result.append(normalized)
+
+    return result
