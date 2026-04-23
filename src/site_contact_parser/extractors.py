@@ -24,7 +24,7 @@ TELEGRAM_LINK_REGEX = re.compile(
 )
 
 TELEGRAM_CONTEXT_HANDLE_REGEX = re.compile(
-    r"(?:telegram|telegram:\s*|telegram\s+channel[:\s]*|telegram\s+group[:\s]*|tg[:\s]+|t\.me/)\s*@?([A-Za-z][A-Za-z0-9_]{2,31})\b",
+    r"(?:telegram(?:\s+(?:channel|group))?\s*:?\s*|tg\s*:?\s*)(@[A-Za-z][A-Za-z0-9_]{2,31})\b",
     re.IGNORECASE,
 )
 
